@@ -45,7 +45,7 @@ contract ERC721RExample is ERC721A, Ownable, ReentrancyGuard {
         require(msg.value == quantity * mintPrice, "Value");
         require(
             _isAllowlisted(msg.sender, proof, merkleRoot),
-            "Not whitelisted"
+            "Not on allow list"
         );
         require(
             userMintedAmount[msg.sender] + quantity <= maxUserMintAmount,
