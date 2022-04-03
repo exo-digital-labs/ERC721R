@@ -55,7 +55,7 @@ https://twitter.com/swombat/status/1492484783036936192
 
 ## Supporting ERC721R projects
 
-We've created a list of high-quality buyers that have committed to purchase from the next 10 NFT projects to implement refunds. If you'd like to be added to the list you can fill in this form: **TODO**.
+We've created a list of high-quality buyers that have committed to purchase from the next 10 NFT projects to implement refunds. If you'd like to be added to the list you can fill in [this form](https://skilledcoil.typeform.com/erc721r).
 
 As long as the project has a mint price of 0.2ETH or less with at least a 14-day trustless refund period, everyone in the list commits to mint. Of course, there's no guarantee minters won't execute a refund.
 
