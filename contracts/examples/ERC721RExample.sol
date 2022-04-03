@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./ERC721A.sol";
+import "erc721a/contracts/ERC721A.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract ERC721RExample is ERC721A, Ownable, ReentrancyGuard {
-    uint256 public maxMintSupply = 8000;
+contract ERC721RExample is ERC721A, Ownable {
+    uint256 public constant maxMintSupply = 8000;
     uint256 public constant mintPrice = 0.1 ether;
-    uint256 public refundPeriod = 45 days;
+    uint256 public constant refundPeriod = 45 days;
 
     // Sale Status
     bool public publicSaleActive;
@@ -29,16 +28,13 @@ contract ERC721RExample is ERC721A, Ownable, ReentrancyGuard {
         _;
     }
 
-    constructor()
-        ERC721A("ERC721RExample", "ERC721R")
-    {
+    constructor() ERC721A("ERC721RExample", "ERC721R") {
         refundAddress = msg.sender;
     }
 
     function preSaleMint(uint256 quantity, bytes32[] calldata proof)
         external
         payable
-        nonReentrant
         notContract
     {
         require(presaleActive, "Presale is not active");
@@ -59,12 +55,7 @@ contract ERC721RExample is ERC721A, Ownable, ReentrancyGuard {
         _safeMint(msg.sender, quantity);
     }
 
-    function publicSaleMint(uint256 quantity)
-        external
-        payable
-        nonReentrant
-        notContract
-    {
+    function publicSaleMint(uint256 quantity) external payable notContract {
         require(publicSaleActive, "Public sale is not active");
         require(msg.value == quantity * mintPrice, "Value");
         require(
@@ -78,19 +69,18 @@ contract ERC721RExample is ERC721A, Ownable, ReentrancyGuard {
         _safeMint(msg.sender, quantity);
     }
 
-    function ownerMint(uint256 quantity) external onlyOwner nonReentrant {
+    function ownerMint(uint256 quantity) external onlyOwner {
         require(amountMinted + quantity <= maxMintSupply, "Max mint supply");
         _safeMint(msg.sender, quantity);
     }
 
-    function refund(uint256[] calldata tokenIds) external nonReentrant {
+    function refund(uint256[] calldata tokenIds) external {
         require(refundGuaranteeActive(), "Refund expired");
-        uint256 refundAmount = 0;
+        uint256 refundAmount = tokenIds.length * mintPrice;
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
-            require(msg.sender == ownerOf(tokenId), "Not owner");
+            require(msg.sender == ownerOf(tokenId), "Not token owner");
             transferFrom(msg.sender, refundAddress, tokenId);
-            refundAmount += mintPrice;
         }
 
         Address.sendValue(payable(msg.sender), refundAmount);
