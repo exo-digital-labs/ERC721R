@@ -76,13 +76,14 @@ contract ERC721RExample is ERC721A, Ownable {
 
     function refund(uint256[] calldata tokenIds) external {
         require(refundGuaranteeActive(), "Refund expired");
-        uint256 refundAmount = tokenIds.length * mintPrice;
+
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
             require(msg.sender == ownerOf(tokenId), "Not token owner");
             transferFrom(msg.sender, refundAddress, tokenId);
         }
 
+        uint256 refundAmount = tokenIds.length * mintPrice;
         Address.sendValue(payable(msg.sender), refundAmount);
     }
 
