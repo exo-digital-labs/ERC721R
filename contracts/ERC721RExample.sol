@@ -30,6 +30,7 @@ contract ERC721RExample is ERC721A, Ownable {
 
     constructor() ERC721A("ERC721RExample", "ERC721R") {
         refundAddress = msg.sender;
+        toggleRefundCountdown();
     }
 
     function preSaleMint(uint256 quantity, bytes32[] calldata proof)
@@ -119,7 +120,7 @@ contract ERC721RExample is ERC721A, Ownable {
         baseURI = uri;
     }
 
-    function toggleRefundCountdown() external onlyOwner {
+    function toggleRefundCountdown() public onlyOwner {
         refundEndTime = block.timestamp + refundPeriod;
     }
 

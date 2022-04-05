@@ -27,6 +27,11 @@ uint256 public constant refundPeriod = 45 days;
 uint256 public refundEndTime;
 address public refundAddress;
 
+constructor() ERC721A("ERC721RExample", "ERC721R") {
+    refundAddress = msg.sender;
+    toggleRefundCountdown();
+}
+
 function refundGuaranteeActive() public view returns (bool) {
     return (block.timestamp <= refundEndTime);
 }
@@ -44,7 +49,7 @@ function refund(uint256[] calldata tokenIds) external {
     Address.sendValue(payable(msg.sender), refundAmount);
 }
 
-function toggleRefundCountdown() external onlyOwner {
+function toggleRefundCountdown() public onlyOwner {
     refundEndTime = block.timestamp + refundPeriod;
 }
 
