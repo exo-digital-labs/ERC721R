@@ -62,13 +62,8 @@ As long as the project has a mint price of 0.2ETH or less with at least a 14-day
 ## Projects using ERC721R
 
 - [CryptoFighters](https://cryptofighters.io) (for which ERC721R was built)
-
-## Prior Art
-
-Projects that have already offered trustless refunds include:
-
-- Exodia (ERC1155) - 14 day refund period
-- Curious Addys Trading Club (ERC721) - 100 day refund period
+- [Exodia](https://exodia.io) - 14 day refund. Sold out
+- [Curious Addys Trading Club](https://exodia.io) - 100 day refund. Sold out
 
 ## Roadmap
 
