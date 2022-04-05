@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "erc721a/contracts/ERC721A.sol";
-import "./CryptoFightersPotion.sol"; // TODO add to repo
+import "./CryptoFightersPotion.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
