@@ -57,12 +57,15 @@ contract ERC721RExample is ERC721A, Ownable {
 
     function publicSaleMint(uint256 quantity) external payable notContract {
         require(publicSaleActive, "Public sale is not active");
-        require(msg.value == quantity * mintPrice, "Value");
+        require(msg.value >= quantity * mintPrice, "Not enough eth sent");
         require(
             userMintedAmount[msg.sender] + quantity <= maxUserMintAmount,
-            "Max amount"
+            "Over mint limit"
         );
-        require(amountMinted + quantity <= maxMintSupply, "Max mint supply");
+        require(
+            amountMinted + quantity <= maxMintSupply,
+            "Max mint supply reached"
+        );
 
         amountMinted += quantity;
         userMintedAmount[msg.sender] += quantity;
@@ -70,7 +73,10 @@ contract ERC721RExample is ERC721A, Ownable {
     }
 
     function ownerMint(uint256 quantity) external onlyOwner {
-        require(amountMinted + quantity <= maxMintSupply, "Max mint supply");
+        require(
+            amountMinted + quantity <= maxMintSupply,
+            "Max mint supply reached"
+        );
         _safeMint(msg.sender, quantity);
     }
 
