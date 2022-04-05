@@ -17,7 +17,7 @@ contract ERC721RExample is ERC721A, Ownable {
     uint256 public refundEndTime;
 
     address public refundAddress;
-    uint256 public maxUserMintAmount;
+    uint256 public maxUserMintAmount = 5;
     mapping(address => uint256) public userMintedAmount;
     bytes32 public merkleRoot;
 
