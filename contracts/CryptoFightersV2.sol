@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./ERC721A.sol";
-import "./CryptoFightersPotion.sol";
+import "erc721a/contracts/ERC721A.sol";
+import "./CryptoFightersPotion.sol"; // TODO add to repo
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -120,8 +120,6 @@ contract CryptoFightersV2 is ERC721A, Ownable, ReentrancyGuard {
             require(msg.sender == ownerOf(tokenId), "Not owner");
             transferFrom(msg.sender, refundAddress, tokenId);
 
-            // TODO: @ELI v1 upgrade tokenId 0 can pay 0.05 and get 0.1 returned.. can solve
-            // by mapping v1 => v2 as well
             if (v2ToV1Mapping[tokenId] != 0) {
                 refundAmount += mintPriceWithPotion;
             } else {
