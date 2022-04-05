@@ -53,21 +53,6 @@ function setRefundAddress(address _refundAddress) external onlyOwner {
 }
 ```
 
-## How long should the refund period be?
-
-There's no one answer to this question, but some things to consider:
-
-A longer refund period means:
-
-- More time for the team to deliver before the refund period runs out.
-- A longer delay till the team can access the funds.
-
-What some other projects have done:
-
-- Exodia offered a 14 day refund period.
-- Curious Addy’s Trading Club offered a 100 day refund period.
-- CryptoFighters is offering a 45 day refund period.
-
 ## Benefits
 
 For buyers:
@@ -87,6 +72,21 @@ A benefit to both:
 
 Another thread on the benefits of refunds can be found in Daniel Tenner's Twitter thread:
 https://twitter.com/swombat/status/1492484783036936192
+
+## How long should the refund period be?
+
+There's no one answer to this question, but some things to consider:
+
+A longer refund period means:
+
+- More time for the team to deliver before the refund period runs out.
+- A longer delay till the team can access the funds.
+
+What some other projects have done:
+
+- Exodia offered a 14 day refund period.
+- Curious Addy’s Trading Club offered a 100 day refund period.
+- CryptoFighters is offering a 45 day refund period.
 
 ## Supporting ERC721R projects
 
