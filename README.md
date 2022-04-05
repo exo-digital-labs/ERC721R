@@ -18,6 +18,41 @@ When you mint an NFT in an ERC721R collection the funds are held by the smart co
 
 If the creators decide to rug, buyers will request their funds back before the waiting period has completed only losing gas costs for the transactions.
 
+## Usage
+
+Add the following code snippets to your smart contracts to add refunds:
+
+```solidity
+uint256 public constant refundPeriod = 45 days;
+uint256 public refundEndTime;
+address public refundAddress;
+
+function refundGuaranteeActive() public view returns (bool) {
+    return (block.timestamp <= refundEndTime);
+}
+
+function refund(uint256[] calldata tokenIds) external {
+    require(refundGuaranteeActive(), "Refund expired");
+
+    for (uint256 i = 0; i < tokenIds.length; i++) {
+        uint256 tokenId = tokenIds[i];
+        require(msg.sender == ownerOf(tokenId), "Not token owner");
+        transferFrom(msg.sender, refundAddress, tokenId);
+    }
+
+    uint256 refundAmount = tokenIds.length * mintPrice;
+    Address.sendValue(payable(msg.sender), refundAmount);
+}
+
+function toggleRefundCountdown() external onlyOwner {
+    refundEndTime = block.timestamp + refundPeriod;
+}
+
+function setRefundAddress(address _refundAddress) external onlyOwner {
+    refundAddress = _refundAddress;
+}
+```
+
 ## How long should the refund period be?
 
 There's no one answer to this question, but some things to consider:
