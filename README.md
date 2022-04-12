@@ -32,12 +32,16 @@ constructor() ERC721A("ERC721RExample", "ERC721R") {
     toggleRefundCountdown();
 }
 
-function refundGuaranteeActive() public view returns (bool) {
+function isRefundGuaranteeActive() public view returns (bool) {
     return (block.timestamp <= refundEndTime);
 }
 
+function getRefundGuaranteeEndTime() public view returns (uint256) {
+    return refundEndTime;
+}
+
 function refund(uint256[] calldata tokenIds) external {
-    require(refundGuaranteeActive(), "Refund expired");
+    require(isRefundGuaranteeActive(), "Refund expired");
 
     for (uint256 i = 0; i < tokenIds.length; i++) {
         uint256 tokenId = tokenIds[i];
