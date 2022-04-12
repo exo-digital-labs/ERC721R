@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import "erc721a/contracts/ERC721A.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "hardhat/console.sol";
 
 contract ERC721RExample is ERC721A, Ownable {
     uint256 public constant maxMintSupply = 8000;
