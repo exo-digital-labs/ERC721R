@@ -127,7 +127,6 @@ contract ERC721RExample is ERC721A, Ownable {
 
     function toggleRefundCountdown() public onlyOwner {
         refundEndTime = block.timestamp + refundPeriod;
-        console.log("Refund counted started to block");
         console.log(refundEndTime);
     }
 

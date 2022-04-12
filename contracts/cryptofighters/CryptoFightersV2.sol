@@ -130,7 +130,7 @@ contract CryptoFightersV2 is ERC721A, Ownable, ReentrancyGuard {
         Address.sendValue(payable(msg.sender), refundAmount);
     }
 
-    function getRefundGuaranteeEndBlock() public view returns (uint256) {
+    function getRefundGuaranteeEndTime() public view returns (uint256) {
         return refundEndTime;
     }
     function isRefundGuaranteeActive() public view returns (bool) {
