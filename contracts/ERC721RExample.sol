@@ -87,7 +87,7 @@ contract ERC721RExample is ERC721A, Ownable {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
             require(msg.sender == ownerOf(tokenId), "Not token owner");
-            transferFrom(msg.sender, refundAddress, tokenId);
+            transferFrom(msg.sender, address(0), tokenId);
         }
 
         uint256 refundAmount = tokenIds.length * mintPrice;
