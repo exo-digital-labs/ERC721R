@@ -21,6 +21,8 @@ contract ERC721RExample is ERC721A, Ownable {
     mapping(address => uint256) public userMintedAmount;
     bytes32 public merkleRoot;
 
+    mapping(uint256 => bool) hasRefunded;
+
     string private baseURI;
 
     modifier notContract() {
@@ -87,6 +89,8 @@ contract ERC721RExample is ERC721A, Ownable {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
             require(msg.sender == ownerOf(tokenId), "Not token owner");
+            require(!hasRefunded[tokenId], "Already refunded!");
+            hasRefunded[tokenId] = true;
             transferFrom(msg.sender, refundAddress, tokenId);
         }
 
