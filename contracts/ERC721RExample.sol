@@ -21,7 +21,7 @@ contract ERC721RExample is ERC721A, Ownable {
     mapping(address => uint256) public userMintedAmount;
     bytes32 public merkleRoot;
 
-    mapping(uint256 => bool) hasRefunded;
+    mapping(uint256 => bool) public hasRefunded; // users can search if the NFT has been refunded
 
     string private baseURI;
 
