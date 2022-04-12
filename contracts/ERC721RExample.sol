@@ -82,13 +82,7 @@ contract ERC721RExample is ERC721A, Ownable {
     }
 
     function refund(uint256[] calldata tokenIds) external {
-        // === NEW ===
-        // refundAddress can call this function over and over again and take all the funds from contract.
-        // Because everytime refundAddress call this function, tokens are transfering to himself again.
-        // And then, he will be able to call this refund function with same token Id over and over again ...
-        // ... until he withdraw all the funds from contract.
         require(msg.sender != refundAddress, "Can't refund to refundAddress");
-        // ==========
         require(refundGuaranteeActive(), "Refund expired");
 
         for (uint256 i = 0; i < tokenIds.length; i++) {
