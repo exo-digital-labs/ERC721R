@@ -28,6 +28,11 @@ contract ERC721RExample is ERC721A, Ownable {
         _;
     }
 
+    modifier notOwner(){
+        require(!(owner() == _msgSender()), "Owner not allow");
+        _;
+    }
+
     constructor() ERC721A("ERC721RExample", "ERC721R") {
         refundAddress = msg.sender;
         toggleRefundCountdown();
@@ -73,6 +78,8 @@ contract ERC721RExample is ERC721A, Ownable {
         _safeMint(msg.sender, quantity);
     }
 
+
+    // I will set a timeline for that, maybe a year
     function ownerMint(uint256 quantity) external onlyOwner {
         require(
             amountMinted + quantity <= maxMintSupply,
@@ -81,7 +88,7 @@ contract ERC721RExample is ERC721A, Ownable {
         _safeMint(msg.sender, quantity);
     }
 
-    function refund(uint256[] calldata tokenIds) external {
+    function refund(uint256[] calldata tokenIds) external notOwner {
         require(refundGuaranteeActive(), "Refund expired");
 
         for (uint256 i = 0; i < tokenIds.length; i++) {
