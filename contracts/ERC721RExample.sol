@@ -22,10 +22,7 @@ contract ERC721RExample is ERC721A, Ownable {
     bytes32 public merkleRoot;
 
     mapping(uint256 => bool) public hasRefunded; // users can search if the NFT has been refunded
-<<<<<<< HEAD
     mapping(uint256 => bool) public isOwnerMint; // if the NFT was freely minted by owner
-=======
->>>>>>> 2e6c76909d422ed0b70914d1192c9f1665d5b826
 
     string private baseURI;
 
