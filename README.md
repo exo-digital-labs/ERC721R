@@ -4,6 +4,10 @@
 
 The goal of ERC721R is to add refund functionality to the ERC721 and ERC1155 standards. This repo contains community provided examples you can use in your own NFT smart contract.
 
+## Beta
+
+This code is still in beta and undergoing reviews. Use at your own risk.
+
 ## Motivation
 
 The NFT space needs greater accountability. The space faces too many rugpulls and for the health of the NFT ecosystem as a whole we need better mechanisms to prevent these from happening.
