@@ -21,6 +21,9 @@ contract ERC721RExample is ERC721A, Ownable {
     mapping(address => uint256) public userMintedAmount;
     bytes32 public merkleRoot;
 
+    mapping(uint256 => bool) public hasRefunded; // users can search if the NFT has been refunded
+    mapping(uint256 => bool) public isOwnerMint; // if the NFT was freely minted by owner
+
     string private baseURI;
 
     modifier notContract() {
@@ -79,6 +82,10 @@ contract ERC721RExample is ERC721A, Ownable {
             "Max mint supply reached"
         );
         _safeMint(msg.sender, quantity);
+
+        for (uint256 i = _currentIndex - quantity; i < _currentIndex; i++) {
+            isOwnerMint[i] = true;
+        }
     }
 
     function refund(uint256[] calldata tokenIds) external {
@@ -87,6 +94,9 @@ contract ERC721RExample is ERC721A, Ownable {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
             require(msg.sender == ownerOf(tokenId), "Not token owner");
+            require(!hasRefunded[tokenId], "Already refunded");
+            require(!isOwnerMint[tokenId], "Freely minted NFTs cannot be refunded");
+            hasRefunded[tokenId] = true;
             transferFrom(msg.sender, refundAddress, tokenId);
         }
 

@@ -39,4 +39,33 @@ describe("ERC721RExample", function () {
     );
     expect(balanceAfterRefundOfOwner).to.be.equal(1);
   });
+
+  it("Freely minted NFTs cannot be refunded", async function () {
+    await erc721RExample.ownerMint(1);
+    expect(await erc721RExample.isOwnerMint(1)).to.be.equal(true);
+    await expect(erc721RExample.refund([1])).to.be.revertedWith(
+      "Freely minted NFTs cannot be refunded"
+    );
+  });
+
+  it("NFT cannot be refunded twice", async function () {
+    // update refund address and mint NFT from refund address
+    await erc721RExample.setRefundAddress(account3.address);
+    await erc721RExample
+      .connect(account3)
+      .publicSaleMint(1, { value: parseEther(MINT_PRICE) });
+
+    // other user mint 3 NFTs
+    await erc721RExample
+      .connect(account2)
+      .publicSaleMint(3, { value: parseEther("0.3") });
+    expect(
+      await erc721RExample.provider.getBalance(erc721RExample.address)
+    ).to.be.equal(parseEther("0.4"));
+
+    await erc721RExample.connect(account3).refund([2]);
+    await expect(
+      erc721RExample.connect(account3).refund([2])
+    ).to.be.revertedWith("Already refunded");
+  });
 });
