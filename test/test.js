@@ -9,7 +9,10 @@ let account2;
 let account3;
 let erc721RExample;
 
+let blockDeployTimeStamp;
+
 const MINT_PRICE = "0.1";
+const FORTY_FIVE_DAYS = 24 * 60 * 60 * 45;
 
 const mineSingleBlock = async () => {
   await ethers.provider.send("hardhat_mine", [
@@ -22,11 +25,13 @@ async function simulateNextBlockTime(baseTime,changeBy){
     await mineSingleBlock();
 }
 describe("ERC721RExample", function () {
-  before(async function () {
-    [owner, account2, account3, account4] = await ethers.getSigners();
+  beforeEach(async function () {
+    [owner, account2, account3] = await ethers.getSigners();
     const ERC721RExample = await ethers.getContractFactory("ERC721RExample");
     erc721RExample = await ERC721RExample.deploy();
     await erc721RExample.deployed();
+    blockDeployTimeStamp = (await erc721RExample.provider.getBlock("latest"))
+      .timestamp;
 
     const saleActive = await erc721RExample.publicSaleActive();
     expect(saleActive).to.be.equal(false);
@@ -75,8 +80,8 @@ describe("ERC721RExample", function () {
 
   it("Freely minted NFTs cannot be refunded", async function () {
     await erc721RExample.ownerMint(1);
-    expect(await erc721RExample.isOwnerMint(1)).to.be.equal(true);
-    await expect(erc721RExample.refund([1])).to.be.revertedWith(
+    expect(await erc721RExample.isOwnerMint(0)).to.be.equal(true);
+    await expect(erc721RExample.refund([0])).to.be.revertedWith(
       "Freely minted NFTs cannot be refunded"
     );
   });
@@ -96,9 +101,44 @@ describe("ERC721RExample", function () {
       await erc721RExample.provider.getBalance(erc721RExample.address)
     ).to.be.equal(parseEther("0.4"));
 
-    await erc721RExample.connect(account3).refund([2]);
+    await erc721RExample.connect(account3).refund([0]);
     await expect(
-      erc721RExample.connect(account3).refund([2])
+      erc721RExample.connect(account3).refund([0])
     ).to.be.revertedWith("Already refunded");
+  });
+
+  it("check refundEndTime is same with block timestamp in first deploy", async function () {
+    const refundEndTime = await erc721RExample.refundEndTime();
+    expect(blockDeployTimeStamp + FORTY_FIVE_DAYS).to.be.equal(refundEndTime);
+  });
+
+  it("NFT refund should in 45 days", async function () {
+    const refundEndTime = await erc721RExample.refundEndTime();
+
+    await erc721RExample
+      .connect(account2)
+      .publicSaleMint(1, { value: parseEther(MINT_PRICE) });
+
+    await erc721RExample.provider.send("evm_setNextBlockTimestamp", [
+      refundEndTime.toNumber(),
+    ]);
+
+    await erc721RExample.connect(account2).refund([0]);
+  });
+
+  it("NFT refund expired after 45 days, just plus 1 second", async function () {
+    const refundEndTime = await erc721RExample.refundEndTime();
+
+    await erc721RExample
+      .connect(account2)
+      .publicSaleMint(1, { value: parseEther(MINT_PRICE) });
+
+    await erc721RExample.provider.send("evm_setNextBlockTimestamp", [
+      refundEndTime.toNumber() + 1,
+    ]);
+
+    await expect(erc721RExample.connect(account2).refund([0])).to.revertedWith(
+      "Refund expired"
+    );
   });
 });
