@@ -42,10 +42,7 @@ describe("ERC721RExample", function () {
 
   it("Freely minted NFTs cannot be refunded", async function () {
     await erc721RExample.ownerMint(1);
-    expect(await erc721RExample.isOwnerMint(1)).to.be.equal(true);
-    await expect(erc721RExample.refund([1])).to.be.revertedWith(
-      "Freely minted NFTs cannot be refunded"
-    );
+    await expect(erc721RExample.refund([1])).to.be.revertedWith("Already refunded");
   });
 
   it("NFT cannot be refunded twice", async function () {

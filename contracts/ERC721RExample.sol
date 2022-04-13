@@ -6,9 +6,9 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract ERC721RExample is ERC721A, Ownable {
-    uint256 public constant maxMintSupply = 8000;
-    uint256 public constant mintPrice = 0.1 ether;
-    uint256 public constant refundPeriod = 45 days;
+    uint256 public constant MAX_MINT_SUPPLY = 8000;
+    uint256 public constant MINT_PRICE = 0.1 ether;
+    uint256 public constant REFUND_PERIOD = 45 days;
 
     // Sale Status
     bool public publicSaleActive;
@@ -21,8 +21,7 @@ contract ERC721RExample is ERC721A, Ownable {
     mapping(address => uint256) public userMintedAmount;
     bytes32 public merkleRoot;
 
-    mapping(uint256 => bool) public hasRefunded; // users can search if the NFT has been refunded
-    mapping(uint256 => bool) public isOwnerMint; // if the NFT was freely minted by owner
+    mapping(uint256 => uint256) public amountPaid; // tokenId to amountPaid to avoid owner draining contract
 
     string private baseURI;
 
@@ -42,7 +41,7 @@ contract ERC721RExample is ERC721A, Ownable {
         notContract
     {
         require(presaleActive, "Presale is not active");
-        require(msg.value == quantity * mintPrice, "Value");
+        require(msg.value == quantity * MINT_PRICE, "Value");
         require(
             _isAllowlisted(msg.sender, proof, merkleRoot),
             "Not on allow list"
@@ -51,7 +50,7 @@ contract ERC721RExample is ERC721A, Ownable {
             userMintedAmount[msg.sender] + quantity <= maxUserMintAmount,
             "Max amount"
         );
-        require(amountMinted + quantity <= maxMintSupply, "Max mint supply");
+        require(amountMinted + quantity <= MAX_MINT_SUPPLY, "Max mint supply");
 
         amountMinted += quantity;
         userMintedAmount[msg.sender] += quantity;
@@ -61,31 +60,30 @@ contract ERC721RExample is ERC721A, Ownable {
 
     function publicSaleMint(uint256 quantity) external payable notContract {
         require(publicSaleActive, "Public sale is not active");
-        require(msg.value >= quantity * mintPrice, "Not enough eth sent");
+        require(msg.value >= quantity * MINT_PRICE, "Not enough eth sent");
         require(
             userMintedAmount[msg.sender] + quantity <= maxUserMintAmount,
             "Over mint limit"
         );
         require(
-            amountMinted + quantity <= maxMintSupply,
+            amountMinted + quantity <= MAX_MINT_SUPPLY,
             "Max mint supply reached"
         );
 
         amountMinted += quantity;
         userMintedAmount[msg.sender] += quantity;
         _safeMint(msg.sender, quantity);
+        for (uint256 i = _currentIndex - quantity; i < _currentIndex; i++) {
+            amountPaid[i] = MINT_PRICE;
+        }
     }
 
     function ownerMint(uint256 quantity) external onlyOwner {
         require(
-            amountMinted + quantity <= maxMintSupply,
+            amountMinted + quantity <= MAX_MINT_SUPPLY,
             "Max mint supply reached"
         );
         _safeMint(msg.sender, quantity);
-
-        for (uint256 i = _currentIndex - quantity; i < _currentIndex; i++) {
-            isOwnerMint[i] = true;
-        }
     }
 
     function refund(uint256[] calldata tokenIds) external {
@@ -94,13 +92,12 @@ contract ERC721RExample is ERC721A, Ownable {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
             require(msg.sender == ownerOf(tokenId), "Not token owner");
-            require(!hasRefunded[tokenId], "Already refunded");
-            require(!isOwnerMint[tokenId], "Freely minted NFTs cannot be refunded");
-            hasRefunded[tokenId] = true;
+            require(amountPaid[tokenId] > 0, "Already refunded");
+            amountPaid[tokenId] = 0;
             transferFrom(msg.sender, refundAddress, tokenId);
         }
 
-        uint256 refundAmount = tokenIds.length * mintPrice;
+        uint256 refundAmount = tokenIds.length * MINT_PRICE;
         Address.sendValue(payable(msg.sender), refundAmount);
     }
 
@@ -131,7 +128,7 @@ contract ERC721RExample is ERC721A, Ownable {
     }
 
     function toggleRefundCountdown() public onlyOwner {
-        refundEndTime = block.timestamp + refundPeriod;
+        refundEndTime = block.timestamp + REFUND_PERIOD;
     }
 
     function togglePresaleStatus() external onlyOwner {
