@@ -1,6 +1,5 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-const { expectRevert } = require("@openzeppelin/test-helpers");
 
 const parseEther = ethers.utils.parseEther;
 
@@ -44,8 +43,7 @@ describe("ERC721RExample", function () {
   it("Freely minted NFTs cannot be refunded", async function () {
     await erc721RExample.ownerMint(1);
     expect(await erc721RExample.isOwnerMint(1)).to.be.equal(true);
-    await expectRevert(
-      erc721RExample.refund([1]),
+    await expect(erc721RExample.refund([1])).to.be.revertedWith(
       "Freely minted NFTs cannot be refunded"
     );
   });
@@ -66,9 +64,8 @@ describe("ERC721RExample", function () {
     ).to.be.equal(parseEther("0.4"));
 
     await erc721RExample.connect(account3).refund([2]);
-    await expectRevert(
-      erc721RExample.connect(account3).refund([2]),
-      "Already refunded"
-    );
+    await expect(
+      erc721RExample.connect(account3).refund([2])
+    ).to.be.revertedWith("Already refunded");
   });
 });
