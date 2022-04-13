@@ -79,7 +79,6 @@ contract ERC721RExample is ERC721A, Ownable {
     }
 
 
-    // I will set a timeline for that, maybe a year
     function ownerMint(uint256 quantity) external onlyOwner {
         require(
             amountMinted + quantity <= maxMintSupply,
