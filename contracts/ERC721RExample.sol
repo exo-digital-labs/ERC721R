@@ -20,6 +20,7 @@ contract ERC721RExample is ERC721A, Ownable {
     uint256 public maxUserMintAmount = 5;
     mapping(address => uint256) public userMintedAmount;
     bytes32 public merkleRoot;
+    mapping(address => bool) public refundBlacklist;
 
     string private baseURI;
 
@@ -29,6 +30,7 @@ contract ERC721RExample is ERC721A, Ownable {
     }
 
     constructor() ERC721A("ERC721RExample", "ERC721R") {
+        refundBlacklist[msg.sender] = true;
         refundAddress = msg.sender;
         toggleRefundCountdown();
     }
@@ -83,6 +85,7 @@ contract ERC721RExample is ERC721A, Ownable {
 
     function refund(uint256[] calldata tokenIds) external {
         require(refundGuaranteeActive(), "Refund expired");
+        require(notInBlackList(msg.sender), "Refund blacklist address");
 
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
@@ -92,6 +95,10 @@ contract ERC721RExample is ERC721A, Ownable {
 
         uint256 refundAmount = tokenIds.length * mintPrice;
         Address.sendValue(payable(msg.sender), refundAmount);
+    }
+
+    function notInBlackList(address _refundAddress) public view returns (bool) {
+        return refundBlacklist[_refundAddress] != true;
     }
 
     function refundGuaranteeActive() public view returns (bool) {
@@ -109,6 +116,7 @@ contract ERC721RExample is ERC721A, Ownable {
     }
 
     function setRefundAddress(address _refundAddress) external onlyOwner {
+        refundBlacklist[msg.sender] = true;
         refundAddress = _refundAddress;
     }
 

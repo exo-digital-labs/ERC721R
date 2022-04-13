@@ -39,4 +39,8 @@ describe("ERC721RExample", function () {
     );
     expect(balanceAfterRefundOfOwner).to.be.equal(1);
   });
+
+  it("should be prohibited refundAddress call refund", async function(){
+    await expect(erc721RExample.connect(owner).refund([0])).to.be.revertedWith("Refund blacklist address");
+  });
 });
