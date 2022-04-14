@@ -1,4 +1,8 @@
 {
+  "name": "erc721r",
+  "description": "The goal of ERC721R is to add refund functionality to the ERC721 and ERC1155 standards. This repo contains community provided examples you can use in your own NFT smart contract.",
+  "version": "0.0.2",
+  "main": "hardhat.config.js",
   "scripts": {
     "test": "npx hardhat test"
   },
@@ -10,5 +14,19 @@
     "ethereum-waffle": "^3.4.4",
     "ethers": "^5.6.1",
     "hardhat": "^2.9.2"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/exo-digital-labs/ERC721R.git"
+  },
+  "keywords": [],
+  "author": "exo-digital-labs",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/exo-digital-labs/ERC721R/issues"
+  },
+  "homepage": "https://github.com/exo-digital-labs/ERC721R#readme"
 }
