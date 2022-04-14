@@ -12,6 +12,8 @@ let erc721RExample;
 let blockDeployTimeStamp;
 
 const MINT_PRICE = "0.1";
+const MAX_MINT_SUPPLY = 8000;
+const MAX_USER_MINT_AMOUNT = 5;
 const FORTY_FIVE_DAYS = 24 * 60 * 60 * 45;
 
 const mineSingleBlock = async () => {
@@ -42,9 +44,33 @@ describe("ERC721RExample", function () {
     expect(publicSaleActive).to.eq(true);
   });
 
+  it("Check maxMintSupply", async function () {
+    expect(await erc721RExample.maxMintSupply()).to.be.equal(MAX_MINT_SUPPLY);
+  });
+
+  it("Check mintPrice", async function () {
+    expect(await erc721RExample.mintPrice()).to.be.equal(
+      parseEther(MINT_PRICE)
+    );
+  });
+
+  it("Check refundPeriod", async function () {
+    expect(await erc721RExample.refundPeriod()).to.be.equal(FORTY_FIVE_DAYS);
+  });
+
+  it("Check maxUserMintAmount", async function () {
+    expect(await erc721RExample.maxUserMintAmount()).to.be.equal(
+      MAX_USER_MINT_AMOUNT
+    );
+  });
+
   it("Check refundEndTime is same with block timestamp in first deploy", async function () {
     const refundEndTime = await erc721RExample.refundEndTime();
     expect(blockDeployTimeStamp + FORTY_FIVE_DAYS).to.be.equal(refundEndTime);
+  });
+
+  it("Check refundGuaranteeActive", async function () {
+    expect(await erc721RExample.refundGuaranteeActive()).to.be.true;
   });
 
   it("Should be able to deploy", async function () {});
