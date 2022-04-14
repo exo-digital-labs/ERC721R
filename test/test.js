@@ -141,4 +141,28 @@ describe("ERC721RExample", function () {
       "Refund expired"
     );
   });
+
+  it("can withdraw by owner", async function () {
+    const refundEndTime = await erc721RExample.refundEndTime();
+
+    await erc721RExample
+      .connect(account2)
+      .publicSaleMint(1, { value: parseEther(MINT_PRICE) });
+
+    await erc721RExample.provider.send("evm_setNextBlockTimestamp", [
+      refundEndTime.toNumber() + 1,
+    ]);
+
+    await erc721RExample.connect(owner).withdraw();
+
+    const contractVault = await erc721RExample.provider.getBalance(
+      erc721RExample.address
+    );
+    const ownerBalance = await erc721RExample.provider.getBalance(
+      owner.address
+    );
+
+    expect(contractVault).to.be.equal(parseEther("0"));
+    expect(ownerBalance).to.be.gt(parseEther("0.1"));
+  });
 });
