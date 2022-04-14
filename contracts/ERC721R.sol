@@ -8,7 +8,7 @@ contract ERC721R is ERC721A {
     uint256 public immutable collectionSize;
     uint256 public immutable maxBatchSize;
     uint256 public immutable mintPrice;
-    
+
     uint256 public immutable refundEndTime;
 
     mapping(uint256 => bool) public hasRefunded; // users can search if the NFT has been refunded
@@ -35,8 +35,12 @@ contract ERC721R is ERC721A {
     refundEndTime = block.timestamp + refundPeriod_;
     }
 
+    function refundGuaranteeActive() public view returns (bool) {
+        return (block.timestamp <= refundEndTime);
+    }
+
     function _refund(address to, uint256[] calldata tokenIds) internal {
-        require(block.timestamp <= refundEndTime, "refund expired");
+        require(refundGuaranteeActive(), "refund expired");
 
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
