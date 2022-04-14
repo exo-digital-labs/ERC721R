@@ -264,6 +264,14 @@ describe("ERC721RExample", function () {
   /**
    * Refund Test
    */
+  it("[Refund:Revert] Should not be refunded when `Not token owner`", async function () {
+    await erc721RExample.ownerMint(1);
+    expect(await erc721RExample.isOwnerMint(0)).to.be.equal(true);
+    await expect(
+      erc721RExample.connect(account2).refund([0])
+    ).to.be.revertedWith("Not token owner");
+  });
+
   it("[Refund:Revert] `Freely minted NFTs cannot be refunded`", async function () {
     await erc721RExample.ownerMint(1);
     expect(await erc721RExample.isOwnerMint(0)).to.be.equal(true);
