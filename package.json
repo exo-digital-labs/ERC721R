@@ -1,5 +1,5 @@
 {
-  "name": "@weiliangdeveloper/erc721r",
+  "name": "@exo-digital-labs/erc721r",
   "description": "The goal of ERC721R is to add refund functionality to the ERC721 and ERC1155 standards. This repo contains community provided examples you can use in your own NFT smart contract.",
   "version": "0.0.2",
   "main": "hardhat.config.js",
