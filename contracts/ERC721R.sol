@@ -5,10 +5,7 @@ pragma solidity ^0.8.4;
 import "erc721a/contracts/ERC721A.sol";
 
 contract ERC721R is ERC721A {
-    uint256 public immutable collectionSize;
-    uint256 public immutable maxBatchSize;
     uint256 public immutable mintPrice;
-
     uint256 public immutable refundEndTime;
 
     mapping(uint256 => bool) public hasRefunded; // users can search if the NFT has been refunded
@@ -22,15 +19,9 @@ contract ERC721R is ERC721A {
     constructor(
     string memory name_,
     string memory symbol_,
-    uint256 collectionSize_,
-    uint256 maxBatchSize_,
     uint256 mintPrice_,
     uint256 refundPeriod_
     ) ERC721A(name_, symbol_) {
-    require(collectionSize_ > 0, "collection must have a nonzero supply");
-    require(maxBatchSize_ > 0, "max batch size must be nonzero");
-    collectionSize = collectionSize_;
-    maxBatchSize = maxBatchSize_;
     mintPrice = mintPrice_;
     refundEndTime = block.timestamp + refundPeriod_;
     }
