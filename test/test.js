@@ -199,7 +199,7 @@ describe("ERC721RExample", function () {
         .connect(account2)
         .preSaleMint(1, proof, { value: parseEther(MINT_PRICE) })
     ).revertedWith("Not on allow list");
-    expect(await erc721RExample.balanceOf(owner.address)).to.be.equal(0);
+    expect(await erc721RExample.balanceOf(account2.address)).to.be.equal(0);
   });
 
   it("[PreSaleMint] Should presale mint merkle tree with valid leaf", async function () {
