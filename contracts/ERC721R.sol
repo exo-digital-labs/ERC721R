@@ -39,16 +39,16 @@ contract ERC721R is ERC721A {
         return (block.timestamp <= refundEndTime);
     }
 
-    function _refund(address to, uint256[] calldata tokenIds) internal {
+    function _refund(address from, address to, uint256[] calldata tokenIds) internal {
         require(refundGuaranteeActive(), "refund expired");
 
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
-            require(msg.sender == ownerOf(tokenId), "not token owner");
+            require(from == ownerOf(tokenId), "not token owner");
             require(!hasRefunded[tokenId], "already refunded");
             require(!isOwnerMint[tokenId], "freely minted NFTs cannot be refunded");
             hasRefunded[tokenId] = true;
-            transferFrom(msg.sender, to, tokenId);
+            transferFrom(from, to, tokenId);
         }
 
         uint256 refundAmount = tokenIds.length * mintPrice;
