@@ -1,10 +1,13 @@
 const { expect } = require("chai");
 const { BigNumber } = require("ethers");
 const { ethers } = require("hardhat");
+const { getTree, getProof } = require("../scripts/merkletree");
 
 const parseEther = ethers.utils.parseEther;
+const solidityKeccak256 = ethers.utils.solidityKeccak256;
 
 let owner;
+let users;
 let account2;
 let account3;
 let erc721RExample;
@@ -31,6 +34,9 @@ async function simulateNextBlockTime(baseTime, changeBy) {
 describe("ERC721RExample", function () {
   beforeEach(async function () {
     [owner, account2, account3] = await ethers.getSigners();
+
+    users = [owner.address, account2.address, account3.address];
+
     const ERC721RExample = await ethers.getContractFactory("ERC721RExample");
     erc721RExample = await ERC721RExample.deploy();
     await erc721RExample.deployed();
@@ -168,12 +174,6 @@ describe("ERC721RExample", function () {
 
   /**
    * PreSaleMint Test
-   *
-   * Test owner, account2 leaf
-   * const leaves = [
-   *  "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-   *  "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
-   * ]
    */
   it("[PreSaleMint:Revert] Should not presale mint when `Not on allow list`", async function () {
     await erc721RExample.provider.send("hardhat_setBalance", [
@@ -181,31 +181,43 @@ describe("ERC721RExample", function () {
       "0xffffffffffffffffffff",
     ]);
 
-    await erc721RExample.togglePresaleStatus();
-    await erc721RExample.setMerkleRoot(
-      "0x070e8db97b197cc0e4a1790c5e6c3667bab32d733db7f815fbe84f5824c7168d"
+    const elements = users.map((address) =>
+      solidityKeccak256(["address"], [address])
     );
+    const merkleTree = getTree(elements);
+    // proof from account3
+    const proof = getProof(
+      merkleTree.tree,
+      solidityKeccak256(["address"], [account3.address])
+    );
+
+    await erc721RExample.togglePresaleStatus();
+    await erc721RExample.setMerkleRoot(merkleTree.root);
+    // with account2
     await expect(
-      erc721RExample.preSaleMint(
-        1,
-        ["0xe9707d0e6171f728f7473c24cc0432a9b07eaaf1efed6a137a4a8c12c79552d9"],
-        { value: parseEther(MINT_PRICE) }
-      )
+      erc721RExample
+        .connect(account2)
+        .preSaleMint(1, proof, { value: parseEther(MINT_PRICE) })
     ).revertedWith("Not on allow list");
     expect(await erc721RExample.balanceOf(owner.address)).to.be.equal(0);
   });
 
   it("[PreSaleMint] Should presale mint merkle tree with valid leaf", async function () {
+    const elements = users.map((address) =>
+      solidityKeccak256(["address"], [address])
+    );
+    const merkleTree = getTree(elements);
+    const proof = getProof(
+      merkleTree.tree,
+      solidityKeccak256(["address"], [account3.address])
+    );
+
+    await erc721RExample.setMerkleRoot(merkleTree.root);
     await erc721RExample.togglePresaleStatus();
-    await erc721RExample.setMerkleRoot(
-      "0x070e8db97b197cc0e4a1790c5e6c3667bab32d733db7f815fbe84f5824c7168d"
-    );
-    await erc721RExample.preSaleMint(
-      1,
-      ["0x00314e565e0574cb412563df634608d76f5c59d9f817e85966100ec1d48005c0"],
-      { value: parseEther(MINT_PRICE) }
-    );
-    expect(await erc721RExample.balanceOf(owner.address)).to.be.equal(1);
+    await erc721RExample.connect(account3).preSaleMint(1, proof, {
+      value: parseEther(MINT_PRICE),
+    });
+    expect(await erc721RExample.balanceOf(account3.address)).to.be.equal(1);
   });
 
   it("[PreSaleMint:Revert] Should not be mint when `Presale is not active`", async function () {
