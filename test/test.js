@@ -47,21 +47,21 @@ describe("ERC721RExample", function () {
   /**
    * Check Test
    */
-  it("[Check] Check maxMintSupply", async function () {
+  it(`[Check] Check maxMintSupply = ${MAX_MINT_SUPPLY}`, async function () {
     expect(await erc721RExample.maxMintSupply()).to.be.equal(MAX_MINT_SUPPLY);
   });
 
-  it("[Check] Check mintPrice", async function () {
+  it(`[Check] Check mintPrice = ${MINT_PRICE}`, async function () {
     expect(await erc721RExample.mintPrice()).to.be.equal(
       parseEther(MINT_PRICE)
     );
   });
 
-  it("[Check] Check refundPeriod", async function () {
+  it(`[Check] Check refundPeriod ${FORTY_FIVE_DAYS}`, async function () {
     expect(await erc721RExample.refundPeriod()).to.be.equal(FORTY_FIVE_DAYS);
   });
 
-  it("[Check] Check maxUserMintAmount", async function () {
+  it(`[Check] Check maxUserMintAmount ${MAX_USER_MINT_AMOUNT}`, async function () {
     expect(await erc721RExample.maxUserMintAmount()).to.be.equal(
       MAX_USER_MINT_AMOUNT
     );
@@ -72,7 +72,7 @@ describe("ERC721RExample", function () {
     expect(blockDeployTimeStamp + FORTY_FIVE_DAYS).to.be.equal(refundEndTime);
   });
 
-  it("[Check] Check refundGuaranteeActive", async function () {
+  it(`[Check] Check refundGuaranteeActive = true`, async function () {
     expect(await erc721RExample.refundGuaranteeActive()).to.be.true;
   });
 
@@ -113,6 +113,15 @@ describe("ERC721RExample", function () {
     await expect(
       erc721RExample.connect(account3).refund([0])
     ).to.be.revertedWith("expired");
+  });
+
+  /**
+   * OwnerMint Test
+   */
+  it("[OwnerMint] Should able to mint", async function () {
+    await erc721RExample.ownerMint(1);
+    expect(await erc721RExample.balanceOf(owner.address)).to.be.equal(1);
+    expect(await erc721RExample.ownerOf(0)).to.be.equal(owner.address);
   });
 
   /**
