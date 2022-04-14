@@ -195,6 +195,17 @@ describe("ERC721RExample", function () {
     );
   });
 
+  it("Owner should not be able to mint when maximum amountMinted", async function () {
+    await erc721RExample.provider.send("hardhat_setStorageAt", [
+      erc721RExample.address,
+      "0x9",
+      ethers.utils.solidityPack(["uint256"], [MAX_MINT_SUPPLY]), // 8000
+    ]);
+    await expect(erc721RExample.ownerMint(1)).to.be.revertedWith(
+      "Max mint supply reached"
+    );
+  });
+
   it("Owner can not withdraw when `Refund period not over`", async function () {
     await expect(erc721RExample.connect(owner).withdraw()).to.revertedWith(
       "Refund period not over"
