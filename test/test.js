@@ -41,6 +41,26 @@ describe("ERC721RExample", function () {
   });
 
 
+  it("Owner can toggleRefundCountdown and refundEndTime add `refundPeriod` days.", async function () {
+    const beforeRefundEndTime = (
+      await erc721RExample.refundEndTime()
+    ).toNumber();
+
+    await erc721RExample.provider.send("evm_setNextBlockTimestamp", [
+      beforeRefundEndTime,
+    ]);
+
+    await erc721RExample.toggleRefundCountdown();
+
+    const afterRefundEndTime = (
+      await erc721RExample.refundEndTime()
+    ).toNumber();
+
+    expect(afterRefundEndTime).to.be.equal(
+      beforeRefundEndTime + FORTY_FIVE_DAYS
+    );
+  });
+
   it("Should be able to mint and request a refund", async function () {
     await erc721RExample
       .connect(account2)
