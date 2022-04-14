@@ -187,7 +187,7 @@ describe("ERC721RExample", function () {
     expect(ownerBalance).to.be.gt(parseEther("0.1"));
   });
 
-  it("Owner can toggleRefundCountdown and refundEndTime add `refundPeriod` days.", async function () {
+  it("Owner can call toggleRefundCountdown and refundEndTime add `refundPeriod` days.", async function () {
     const beforeRefundEndTime = (
       await erc721RExample.refundEndTime()
     ).toNumber();
@@ -205,5 +205,73 @@ describe("ERC721RExample", function () {
     expect(afterRefundEndTime).to.be.equal(
       beforeRefundEndTime + FORTY_FIVE_DAYS
     );
+  });
+
+  it("Owner can call togglePresaleStatus", async function () {
+    await erc721RExample.togglePresaleStatus();
+    expect(await erc721RExample.presaleActive()).to.be.true;
+  });
+
+  it("Owner can call togglePublicSaleStatus", async function () {
+    await erc721RExample.togglePublicSaleStatus();
+    expect(await erc721RExample.publicSaleActive()).to.be.false;
+  });
+
+  it("Owner can call setRefundAddress", async function () {
+    await erc721RExample.setRefundAddress(
+      "0x06f509F73eefBA36352Bc8228F9112C3786100dA"
+    );
+    expect(await erc721RExample.refundAddress()).to.be.equal(
+      "0x06f509F73eefBA36352Bc8228F9112C3786100dA"
+    );
+  });
+
+  it("Owner can call setMerkleRoot", async function () {
+    await erc721RExample.setMerkleRoot(
+      "0x070e8db97b197cc0e4a1790c5e6c3667bab32d733db7f815fbe84f5824c7168d"
+    );
+    expect(await erc721RExample.merkleRoot()).to.be.equal(
+      "0x070e8db97b197cc0e4a1790c5e6c3667bab32d733db7f815fbe84f5824c7168d"
+    );
+  });
+
+  /**
+   * Test owner, account2 leaf
+   * const leaves = [
+   *  "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+   *  "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+   * ]
+   */
+  it("Can not presale mint merkle tree with invalid leaf", async function () {
+    await erc721RExample.provider.send("hardhat_setBalance", [
+      owner.address,
+      "0xffffffffffffffffffff",
+    ]);
+
+    await erc721RExample.togglePresaleStatus();
+    await erc721RExample.setMerkleRoot(
+      "0x070e8db97b197cc0e4a1790c5e6c3667bab32d733db7f815fbe84f5824c7168d"
+    );
+    await expect(
+      erc721RExample.preSaleMint(
+        1,
+        ["0xe9707d0e6171f728f7473c24cc0432a9b07eaaf1efed6a137a4a8c12c79552d9"],
+        { value: parseEther(MINT_PRICE) }
+      )
+    ).revertedWith("Not on allow list");
+    expect(await erc721RExample.balanceOf(owner.address)).to.be.equal(0);
+  });
+
+  it("Can presale mint merkle tree with valid leaf", async function () {
+    await erc721RExample.togglePresaleStatus();
+    await erc721RExample.setMerkleRoot(
+      "0x070e8db97b197cc0e4a1790c5e6c3667bab32d733db7f815fbe84f5824c7168d"
+    );
+    await erc721RExample.preSaleMint(
+      1,
+      ["0x00314e565e0574cb412563df634608d76f5c59d9f817e85966100ec1d48005c0"],
+      { value: parseEther(MINT_PRICE) }
+    );
+    expect(await erc721RExample.balanceOf(owner.address)).to.be.equal(1);
   });
 });
