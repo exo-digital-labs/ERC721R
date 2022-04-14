@@ -112,6 +112,30 @@ describe("ERC721RExample", function () {
     ).to.be.revertedWith("expired");
   });
 
+  it("Should not be able to mint when maximum amountMinted", async function () {
+    await erc721RExample.provider.send("hardhat_setStorageAt", [
+      erc721RExample.address,
+      "0x9",
+      ethers.utils.solidityPack(["uint256"], [MAX_MINT_SUPPLY]), // 8000
+    ]);
+    await expect(
+      erc721RExample
+        .connect(account2)
+        .publicSaleMint(1, { value: parseEther(MINT_PRICE) })
+    ).to.be.revertedWith("Max mint supply reached");
+  });
+
+  it("Should not be able to mint when maximum userMintedAmount", async function () {
+    await erc721RExample
+      .connect(account2)
+      .publicSaleMint(5, { value: parseEther("0.5") });
+    await expect(
+      erc721RExample
+        .connect(account2)
+        .publicSaleMint(1, { value: parseEther(MINT_PRICE) })
+    ).to.be.revertedWith("Over mint limit");
+  });
+
   it("Freely minted NFTs cannot be refunded", async function () {
     await erc721RExample.ownerMint(1);
     expect(await erc721RExample.isOwnerMint(0)).to.be.equal(true);
