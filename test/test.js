@@ -441,12 +441,8 @@ describe("ERC721RExample", function () {
    * Setter Test
    */
   it("[Setter] Owner can call setRefundAddress", async function () {
-    await erc721RExample.setRefundAddress(
-      "0x06f509F73eefBA36352Bc8228F9112C3786100dA"
-    );
-    expect(await erc721RExample.refundAddress()).to.be.equal(
-      "0x06f509F73eefBA36352Bc8228F9112C3786100dA"
-    );
+    await erc721RExample.setRefundAddress(account2.address);
+    expect(await erc721RExample.refundAddress()).to.be.equal(account2.address);
   });
 
   it("[Setter] Owner can call setMerkleRoot", async function () {
