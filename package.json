@@ -4,7 +4,8 @@
   "version": "0.0.2",
   "main": "hardhat.config.js",
   "scripts": {
-    "test": "npx hardhat test"
+    "test": "npx hardhat test",
+    "test-report": "export GAS_REPORT=true && npx hardhat test"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.5",
