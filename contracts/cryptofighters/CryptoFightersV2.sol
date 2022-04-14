@@ -113,7 +113,7 @@ contract CryptoFightersV2 is ERC721A, Ownable, ReentrancyGuard {
     }
 
     function refund(uint256[] calldata tokenIds) external nonReentrant {
-        require(refundGuaranteeActive(), "Refund expired");
+        require(isRefundGuaranteeActive(), "Refund expired");
         uint256 refundAmount = 0;
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
@@ -130,7 +130,10 @@ contract CryptoFightersV2 is ERC721A, Ownable, ReentrancyGuard {
         Address.sendValue(payable(msg.sender), refundAmount);
     }
 
-    function refundGuaranteeActive() public view returns (bool) {
+    function getRefundGuaranteeEndTime() public view returns (uint256) {
+        return refundEndTime;
+    }
+    function isRefundGuaranteeActive() public view returns (bool) {
         return (block.timestamp <= refundEndTime);
     }
 

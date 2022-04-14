@@ -89,7 +89,7 @@ contract ERC721RExample is ERC721A, Ownable {
     }
 
     function refund(uint256[] calldata tokenIds) external {
-        require(refundGuaranteeActive(), "Refund expired");
+        require(isRefundGuaranteeActive(), "Refund expired");
 
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
@@ -104,9 +104,13 @@ contract ERC721RExample is ERC721A, Ownable {
         Address.sendValue(payable(msg.sender), refundAmount);
     }
 
-    function refundGuaranteeActive() public view returns (bool) {
+    function getRefundGuaranteeEndTime() public view returns (uint256) {
+        return refundEndTime;
+    }
+    function isRefundGuaranteeActive() public view returns (bool) {
         return (block.timestamp <= refundEndTime);
     }
+
 
     function withdraw() external onlyOwner {
         require(block.timestamp > refundEndTime, "Refund period not over");
@@ -132,6 +136,7 @@ contract ERC721RExample is ERC721A, Ownable {
 
     function toggleRefundCountdown() public onlyOwner {
         refundEndTime = block.timestamp + refundPeriod;
+        console.log(refundEndTime);
     }
 
     function togglePresaleStatus() external onlyOwner {
