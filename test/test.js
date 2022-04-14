@@ -142,6 +142,12 @@ describe("ERC721RExample", function () {
     );
   });
 
+  it("owner can not withdraw when `Refund period not over`", async function () {
+    await expect(erc721RExample.connect(owner).withdraw()).to.revertedWith(
+      "Refund period not over"
+    );
+  });
+
   it("can withdraw by owner", async function () {
     const refundEndTime = await erc721RExample.refundEndTime();
 
@@ -149,9 +155,20 @@ describe("ERC721RExample", function () {
       .connect(account2)
       .publicSaleMint(1, { value: parseEther(MINT_PRICE) });
 
+    // refund period is over, just refundEndTime + 1 second.
     await erc721RExample.provider.send("evm_setNextBlockTimestamp", [
       refundEndTime.toNumber() + 1,
     ]);
+
+    await erc721RExample.provider.send("hardhat_setBalance", [
+      owner.address,
+      "0x6a94d74f430000", // 0.03 ether
+    ]);
+    const ownerOriginBalance = await erc721RExample.provider.getBalance(
+      owner.address
+    );
+    // first check the owner balance is less than 0.1 ether
+    expect(ownerOriginBalance).to.be.lt(parseEther("0.1"));
 
     await erc721RExample.connect(owner).withdraw();
 
@@ -163,6 +180,7 @@ describe("ERC721RExample", function () {
     );
 
     expect(contractVault).to.be.equal(parseEther("0"));
+    // the owner origin balance is less than 0.1 ether
     expect(ownerBalance).to.be.gt(parseEther("0.1"));
   });
 });
