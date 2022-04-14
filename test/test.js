@@ -264,6 +264,14 @@ describe("ERC721RExample", function () {
   /**
    * Refund Test
    */
+  it("[Refund] Check hasRefunded store correct tokenId", async function () {
+    await erc721RExample
+      .connect(account2)
+      .publicSaleMint(5, { value: parseEther("0.5") });
+    await erc721RExample.connect(account2).refund([3]);
+    expect(await erc721RExample.hasRefunded(3)).to.be.true;
+  });
+
   it("[Refund:Revert] Should not be refunded when `Not token owner`", async function () {
     await erc721RExample.ownerMint(1);
     expect(await erc721RExample.isOwnerMint(0)).to.be.equal(true);
