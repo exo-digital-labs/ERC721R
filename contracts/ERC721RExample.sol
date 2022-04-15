@@ -107,10 +107,10 @@ contract ERC721RExample is ERC721A, Ownable {
     function getRefundGuaranteeEndTime() public view returns (uint256) {
         return refundEndTime;
     }
+
     function isRefundGuaranteeActive() public view returns (bool) {
         return (block.timestamp <= refundEndTime);
     }
-
 
     function withdraw() external onlyOwner {
         require(block.timestamp > refundEndTime, "Refund period not over");
@@ -136,7 +136,6 @@ contract ERC721RExample is ERC721A, Ownable {
 
     function toggleRefundCountdown() public onlyOwner {
         refundEndTime = block.timestamp + refundPeriod;
-        console.log(refundEndTime);
     }
 
     function togglePresaleStatus() external onlyOwner {
