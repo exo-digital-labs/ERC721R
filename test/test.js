@@ -25,6 +25,7 @@ const mineSingleBlock = async () => {
     ethers.utils.hexValue(1).toString(),
   ]);
 };
+
 async function simulateNextBlockTime(baseTime, changeBy) {
   const bi = BigNumber.from(baseTime);
   await ethers.provider.send("evm_setNextBlockTimestamp", [
@@ -32,6 +33,7 @@ async function simulateNextBlockTime(baseTime, changeBy) {
   ]);
   await mineSingleBlock();
 }
+
 describe("ERC721RExample", function () {
   beforeEach(async function () {
     [owner, account2, account3] = await ethers.getSigners();
@@ -76,12 +78,12 @@ describe("ERC721RExample", function () {
   });
 
   it("[Check] Check refundEndTime is same with block timestamp in first deploy", async function () {
-    const refundEndTime = await erc721RExample.refundEndTime();
+    const refundEndTime = await erc721RExample.getRefundGuaranteeEndTime();
     expect(blockDeployTimeStamp + REFUND_PERIOD).to.be.equal(refundEndTime);
   });
 
   it(`[Check] Check refundGuaranteeActive = true`, async function () {
-    expect(await erc721RExample.refundGuaranteeActive()).to.be.true;
+    expect(await erc721RExample.isRefundGuaranteeActive()).to.be.true;
   });
 
   it("[Mint&Refund] Should be able to mint and request a refund", async function () {
@@ -104,21 +106,6 @@ describe("ERC721RExample", function () {
       owner.address
     );
     expect(balanceAfterRefundOfOwner).to.eq(1);
-  });
-
-  it("Should disable refund after expiry", async function () {
-    await erc721RExample
-      .connect(account3)
-      .publicSaleMint(1, { value: parseEther(MINT_PRICE) });
-
-    const balanceAfterMint = await erc721RExample.balanceOf(account3.address);
-    expect(balanceAfterMint).to.eq(1);
-
-    const endRefundTime = await erc721RExample.getRefundGuaranteeEndTime();
-    await simulateNextBlockTime(endRefundTime, +10);
-    await expect(
-      erc721RExample.connect(account3).refund([0])
-    ).to.be.revertedWith("expired");
   });
 
   it("[OwnerMint] Should able to mint", async function () {
@@ -311,7 +298,7 @@ describe("ERC721RExample", function () {
   });
 
   it("[Refund] NFT refund should in 45 days", async function () {
-    const refundEndTime = await erc721RExample.refundEndTime();
+    const refundEndTime = await erc721RExample.getRefundGuaranteeEndTime();
 
     await erc721RExample
       .connect(account2)
@@ -325,15 +312,13 @@ describe("ERC721RExample", function () {
   });
 
   it("[Refund:Revert] NFT refund expired after 45 days `Refund expired`", async function () {
-    const refundEndTime = await erc721RExample.refundEndTime();
+    const refundEndTime = await erc721RExample.getRefundGuaranteeEndTime();
 
     await erc721RExample
       .connect(account2)
       .publicSaleMint(1, { value: parseEther(MINT_PRICE) });
 
-    await erc721RExample.provider.send("evm_setNextBlockTimestamp", [
-      refundEndTime.toNumber() + 1,
-    ]);
+    await simulateNextBlockTime(refundEndTime, +1);
 
     await expect(erc721RExample.connect(account2).refund([0])).to.revertedWith(
       "Refund expired"
@@ -358,16 +343,13 @@ describe("ERC721RExample", function () {
   });
 
   it("[Owner] Owner can withdraw after refundEndTime", async function () {
-    const refundEndTime = await erc721RExample.refundEndTime();
+    const refundEndTime = await erc721RExample.getRefundGuaranteeEndTime();
 
     await erc721RExample
       .connect(account2)
       .publicSaleMint(1, { value: parseEther(MINT_PRICE) });
 
-    // refund period is over, just refundEndTime + 1 second.
-    await erc721RExample.provider.send("evm_setNextBlockTimestamp", [
-      refundEndTime.toNumber() + 1,
-    ]);
+    await simulateNextBlockTime(refundEndTime, +11);
 
     await erc721RExample.provider.send("hardhat_setBalance", [
       owner.address,
@@ -395,7 +377,7 @@ describe("ERC721RExample", function () {
 
   it("[Toggle] Owner can call toggleRefundCountdown and refundEndTime add `refundPeriod` days.", async function () {
     const beforeRefundEndTime = (
-      await erc721RExample.refundEndTime()
+      await erc721RExample.getRefundGuaranteeEndTime()
     ).toNumber();
 
     await erc721RExample.provider.send("evm_setNextBlockTimestamp", [
@@ -405,7 +387,7 @@ describe("ERC721RExample", function () {
     await erc721RExample.toggleRefundCountdown();
 
     const afterRefundEndTime = (
-      await erc721RExample.refundEndTime()
+      await erc721RExample.getRefundGuaranteeEndTime()
     ).toNumber();
 
     expect(afterRefundEndTime).to.be.equal(beforeRefundEndTime + REFUND_PERIOD);
