@@ -7,17 +7,18 @@ const parseEther = ethers.utils.parseEther;
 const solidityKeccak256 = ethers.utils.solidityKeccak256;
 
 let owner;
-let users;
 let account2;
 let account3;
 let erc721RExample;
 
 let blockDeployTimeStamp;
 
+let merkleTree;
+
 const MINT_PRICE = "0.1";
 const MAX_MINT_SUPPLY = 8000;
 const MAX_USER_MINT_AMOUNT = 5;
-const FORTY_FIVE_DAYS = 24 * 60 * 60 * 45;
+const REFUND_PERIOD = 24 * 60 * 60 * 45;
 
 const mineSingleBlock = async () => {
   await ethers.provider.send("hardhat_mine", [
@@ -35,7 +36,11 @@ describe("ERC721RExample", function () {
   beforeEach(async function () {
     [owner, account2, account3] = await ethers.getSigners();
 
-    users = [owner.address, account2.address, account3.address];
+    merkleTree = getTree(
+      [owner.address, account2.address, account3.address].map((address) =>
+        solidityKeccak256(["address"], [address])
+      )
+    );
 
     const ERC721RExample = await ethers.getContractFactory("ERC721RExample");
     erc721RExample = await ERC721RExample.deploy();
@@ -50,9 +55,6 @@ describe("ERC721RExample", function () {
     expect(publicSaleActive).to.eq(true);
   });
 
-  /**
-   * Check Test
-   */
   it(`[Check] Check maxMintSupply = ${MAX_MINT_SUPPLY}`, async function () {
     expect(await erc721RExample.maxMintSupply()).to.be.equal(MAX_MINT_SUPPLY);
   });
@@ -63,8 +65,8 @@ describe("ERC721RExample", function () {
     );
   });
 
-  it(`[Check] Check refundPeriod ${FORTY_FIVE_DAYS}`, async function () {
-    expect(await erc721RExample.refundPeriod()).to.be.equal(FORTY_FIVE_DAYS);
+  it(`[Check] Check refundPeriod ${REFUND_PERIOD}`, async function () {
+    expect(await erc721RExample.refundPeriod()).to.be.equal(REFUND_PERIOD);
   });
 
   it(`[Check] Check maxUserMintAmount ${MAX_USER_MINT_AMOUNT}`, async function () {
@@ -75,16 +77,14 @@ describe("ERC721RExample", function () {
 
   it("[Check] Check refundEndTime is same with block timestamp in first deploy", async function () {
     const refundEndTime = await erc721RExample.refundEndTime();
-    expect(blockDeployTimeStamp + FORTY_FIVE_DAYS).to.be.equal(refundEndTime);
+    expect(blockDeployTimeStamp + REFUND_PERIOD).to.be.equal(refundEndTime);
   });
 
   it(`[Check] Check refundGuaranteeActive = true`, async function () {
     expect(await erc721RExample.refundGuaranteeActive()).to.be.true;
   });
 
-  it("Should be able to deploy", async function () {});
-
-  it("Should be able to mint and request a refund", async function () {
+  it("[Mint&Refund] Should be able to mint and request a refund", async function () {
     await erc721RExample
       .connect(account2)
       .publicSaleMint(1, { value: parseEther(MINT_PRICE) });
@@ -121,18 +121,12 @@ describe("ERC721RExample", function () {
     ).to.be.revertedWith("expired");
   });
 
-  /**
-   * OwnerMint Test
-   */
   it("[OwnerMint] Should able to mint", async function () {
     await erc721RExample.ownerMint(1);
     expect(await erc721RExample.balanceOf(owner.address)).to.be.equal(1);
     expect(await erc721RExample.ownerOf(0)).to.be.equal(owner.address);
   });
 
-  /**
-   * PublicMint Test
-   */
   it("[PublicMint:Revert] Should not be able to mint when `Public sale is not active`", async function () {
     await erc721RExample.togglePublicSaleStatus();
     await expect(
@@ -172,19 +166,11 @@ describe("ERC721RExample", function () {
     ).to.be.revertedWith("Over mint limit");
   });
 
-  /**
-   * PreSaleMint Test
-   */
   it("[PreSaleMint:Revert] Should not presale mint when `Not on allow list`", async function () {
     await erc721RExample.provider.send("hardhat_setBalance", [
       owner.address,
       "0xffffffffffffffffffff",
     ]);
-
-    const elements = users.map((address) =>
-      solidityKeccak256(["address"], [address])
-    );
-    const merkleTree = getTree(elements);
     // proof from account3
     const proof = getProof(
       merkleTree.tree,
@@ -203,10 +189,6 @@ describe("ERC721RExample", function () {
   });
 
   it("[PreSaleMint] Should presale mint merkle tree with valid leaf", async function () {
-    const elements = users.map((address) =>
-      solidityKeccak256(["address"], [address])
-    );
-    const merkleTree = getTree(elements);
     const proof = getProof(
       merkleTree.tree,
       solidityKeccak256(["address"], [account3.address])
@@ -221,52 +203,55 @@ describe("ERC721RExample", function () {
   });
 
   it("[PreSaleMint:Revert] Should not be mint when `Presale is not active`", async function () {
+    const proof = getProof(
+      merkleTree.tree,
+      solidityKeccak256(["address"], [account2.address])
+    );
     await expect(
-      erc721RExample.preSaleMint(
-        1,
-        ["0x00314e565e0574cb412563df634608d76f5c59d9f817e85966100ec1d48005c0"],
-        { value: parseEther(MINT_PRICE) }
-      )
+      erc721RExample.preSaleMint(1, proof, {
+        value: parseEther(MINT_PRICE),
+      })
     ).to.be.revertedWith("Presale is not active");
   });
 
   it("[PreSaleMint:Revert] Should not be mint when `Value` not enough", async function () {
     await erc721RExample.togglePresaleStatus();
-    await erc721RExample.setMerkleRoot(
-      "0x070e8db97b197cc0e4a1790c5e6c3667bab32d733db7f815fbe84f5824c7168d"
+    await erc721RExample.setMerkleRoot(merkleTree.root);
+
+    const proof = getProof(
+      merkleTree.tree,
+      solidityKeccak256(["address"], [account2.address])
     );
+
     await expect(
-      erc721RExample.preSaleMint(
-        1,
-        ["0x00314e565e0574cb412563df634608d76f5c59d9f817e85966100ec1d48005c0"],
-        { value: 0 }
-      )
+      erc721RExample.preSaleMint(1, proof, { value: 0 })
     ).to.be.revertedWith("Value");
   });
 
   it("[PreSaleMint:Revert] Should not be mint when `Max amount`", async function () {
     await erc721RExample.togglePresaleStatus();
-    await erc721RExample.setMerkleRoot(
-      "0x070e8db97b197cc0e4a1790c5e6c3667bab32d733db7f815fbe84f5824c7168d"
+    await erc721RExample.setMerkleRoot(merkleTree.root);
+
+    const proof = getProof(
+      merkleTree.tree,
+      solidityKeccak256(["address"], [account2.address])
     );
-    await erc721RExample.preSaleMint(
-      5,
-      ["0x00314e565e0574cb412563df634608d76f5c59d9f817e85966100ec1d48005c0"],
-      { value: parseEther("0.5") }
-    );
+    await erc721RExample
+      .connect(account2)
+      .preSaleMint(5, proof, { value: parseEther("0.5") });
     await expect(
-      erc721RExample.preSaleMint(
-        1,
-        ["0x00314e565e0574cb412563df634608d76f5c59d9f817e85966100ec1d48005c0"],
-        { value: parseEther(MINT_PRICE) }
-      )
+      erc721RExample
+        .connect(account2)
+        .preSaleMint(1, proof, { value: parseEther(MINT_PRICE) })
     ).to.be.revertedWith("Max amount");
   });
 
   it("[PreSaleMint:Revert] Should not be mint when `Max mint supply`", async function () {
     await erc721RExample.togglePresaleStatus();
-    await erc721RExample.setMerkleRoot(
-      "0x070e8db97b197cc0e4a1790c5e6c3667bab32d733db7f815fbe84f5824c7168d"
+    await erc721RExample.setMerkleRoot(merkleTree.root);
+    const proof = getProof(
+      merkleTree.tree,
+      solidityKeccak256(["address"], [account2.address])
     );
     await erc721RExample.provider.send("hardhat_setStorageAt", [
       erc721RExample.address,
@@ -274,17 +259,12 @@ describe("ERC721RExample", function () {
       ethers.utils.solidityPack(["uint256"], [MAX_MINT_SUPPLY]), // 8000
     ]);
     await expect(
-      erc721RExample.preSaleMint(
-        1,
-        ["0x00314e565e0574cb412563df634608d76f5c59d9f817e85966100ec1d48005c0"],
-        { value: parseEther(MINT_PRICE) }
-      )
+      erc721RExample
+        .connect(account2)
+        .preSaleMint(1, proof, { value: parseEther(MINT_PRICE) })
     ).to.be.revertedWith("Max mint supply");
   });
 
-  /**
-   * Refund Test
-   */
   it("[Refund] Check hasRefunded store correct tokenId", async function () {
     await erc721RExample
       .connect(account2)
@@ -360,9 +340,6 @@ describe("ERC721RExample", function () {
     );
   });
 
-  /**
-   * Owner Test
-   */
   it("[Owner:Revert] Owner should not be able to mint when `Max mint supply reached`", async function () {
     await erc721RExample.provider.send("hardhat_setStorageAt", [
       erc721RExample.address,
@@ -416,9 +393,6 @@ describe("ERC721RExample", function () {
     expect(ownerBalance).to.be.gt(parseEther("0.1"));
   });
 
-  /**
-   * Toggle Test
-   */
   it("[Toggle] Owner can call toggleRefundCountdown and refundEndTime add `refundPeriod` days.", async function () {
     const beforeRefundEndTime = (
       await erc721RExample.refundEndTime()
@@ -434,9 +408,7 @@ describe("ERC721RExample", function () {
       await erc721RExample.refundEndTime()
     ).toNumber();
 
-    expect(afterRefundEndTime).to.be.equal(
-      beforeRefundEndTime + FORTY_FIVE_DAYS
-    );
+    expect(afterRefundEndTime).to.be.equal(beforeRefundEndTime + REFUND_PERIOD);
   });
 
   it("[Toggle] Owner can call togglePresaleStatus", async function () {
@@ -449,20 +421,13 @@ describe("ERC721RExample", function () {
     expect(await erc721RExample.publicSaleActive()).to.be.false;
   });
 
-  /**
-   * Setter Test
-   */
   it("[Setter] Owner can call setRefundAddress", async function () {
     await erc721RExample.setRefundAddress(account2.address);
     expect(await erc721RExample.refundAddress()).to.be.equal(account2.address);
   });
 
   it("[Setter] Owner can call setMerkleRoot", async function () {
-    await erc721RExample.setMerkleRoot(
-      "0x070e8db97b197cc0e4a1790c5e6c3667bab32d733db7f815fbe84f5824c7168d"
-    );
-    expect(await erc721RExample.merkleRoot()).to.be.equal(
-      "0x070e8db97b197cc0e4a1790c5e6c3667bab32d733db7f815fbe84f5824c7168d"
-    );
+    await erc721RExample.setMerkleRoot(merkleTree.root);
+    expect(await erc721RExample.merkleRoot()).to.be.equal(merkleTree.root);
   });
 });
