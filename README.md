@@ -111,7 +111,7 @@ As long as the project has a mint price of 0.2ETH or less with at least a 14-day
 
 - [CryptoFighters](https://cryptofighters.io) (for which ERC721R was built)
 - [Exodia](https://exodia.io) - 14 day refund. Sold out
-- [Curious Addys Trading Club](https://exodia.io) - 100 day refund. Sold out
+- [Curious Addys Trading Club](https://curiousaddys.com/) - 100 day refund. Sold out
 
 ## Roadmap
 
