@@ -30,11 +30,6 @@ contract CryptoFightersV2 is ERC721A, Ownable, ReentrancyGuard {
     IERC721 private immutable cryptoFightersV1;
     CryptoFightersPotion private immutable cryptoFightersPotion;
 
-    modifier notContract() {
-        require(!Address.isContract(msg.sender), "No contracts");
-        _;
-    }
-
     constructor(address _cryptoFightersV1, address _cryptoFightersPotion)
         ERC721A("CryptoFightersAlliance", "CFA")
     {
@@ -68,7 +63,6 @@ contract CryptoFightersV2 is ERC721A, Ownable, ReentrancyGuard {
         external
         payable
         nonReentrant
-        notContract
     {
         require(presaleActive, "Presale is not active");
         require(msg.value == quantity * mintPrice, "Value");
@@ -92,7 +86,6 @@ contract CryptoFightersV2 is ERC721A, Ownable, ReentrancyGuard {
         external
         payable
         nonReentrant
-        notContract
     {
         require(publicSaleActive, "Public sale is not active");
         require(msg.value == quantity * mintPrice, "Value");

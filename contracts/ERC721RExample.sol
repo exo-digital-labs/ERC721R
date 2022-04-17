@@ -26,11 +26,6 @@ contract ERC721RExample is ERC721A, Ownable {
 
     string private baseURI;
 
-    modifier notContract() {
-        require(!Address.isContract(msg.sender), "No contracts");
-        _;
-    }
-
     constructor() ERC721A("ERC721RExample", "ERC721R") {
         refundAddress = msg.sender;
         toggleRefundCountdown();
@@ -39,7 +34,6 @@ contract ERC721RExample is ERC721A, Ownable {
     function preSaleMint(uint256 quantity, bytes32[] calldata proof)
         external
         payable
-        notContract
     {
         require(presaleActive, "Presale is not active");
         require(msg.value == quantity * mintPrice, "Value");
@@ -59,7 +53,7 @@ contract ERC721RExample is ERC721A, Ownable {
         _safeMint(msg.sender, quantity);
     }
 
-    function publicSaleMint(uint256 quantity) external payable notContract {
+    function publicSaleMint(uint256 quantity) external payable {
         require(publicSaleActive, "Public sale is not active");
         require(msg.value >= quantity * mintPrice, "Not enough eth sent");
         require(
