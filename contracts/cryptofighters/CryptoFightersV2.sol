@@ -30,11 +30,6 @@ contract CryptoFightersV2 is ERC721A, Ownable, ReentrancyGuard {
     IERC721 private immutable cryptoFightersV1;
     CryptoFightersPotion private immutable cryptoFightersPotion;
 
-    modifier notContract() {
-        require(!Address.isContract(msg.sender), "No contracts");
-        _;
-    }
-
     constructor(address _cryptoFightersV1, address _cryptoFightersPotion)
         ERC721A("CryptoFightersAlliance", "CFA")
     {
@@ -68,7 +63,6 @@ contract CryptoFightersV2 is ERC721A, Ownable, ReentrancyGuard {
         external
         payable
         nonReentrant
-        notContract
     {
         require(presaleActive, "Presale is not active");
         require(msg.value == quantity * mintPrice, "Value");
@@ -92,7 +86,6 @@ contract CryptoFightersV2 is ERC721A, Ownable, ReentrancyGuard {
         external
         payable
         nonReentrant
-        notContract
     {
         require(publicSaleActive, "Public sale is not active");
         require(msg.value == quantity * mintPrice, "Value");
@@ -113,7 +106,7 @@ contract CryptoFightersV2 is ERC721A, Ownable, ReentrancyGuard {
     }
 
     function refund(uint256[] calldata tokenIds) external nonReentrant {
-        require(refundGuaranteeActive(), "Refund expired");
+        require(isRefundGuaranteeActive(), "Refund expired");
         uint256 refundAmount = 0;
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
@@ -130,7 +123,10 @@ contract CryptoFightersV2 is ERC721A, Ownable, ReentrancyGuard {
         Address.sendValue(payable(msg.sender), refundAmount);
     }
 
-    function refundGuaranteeActive() public view returns (bool) {
+    function getRefundGuaranteeEndTime() public view returns (uint256) {
+        return refundEndTime;
+    }
+    function isRefundGuaranteeActive() public view returns (bool) {
         return (block.timestamp <= refundEndTime);
     }
 

@@ -26,11 +26,6 @@ contract ERC721RExample is ERC721A, Ownable {
 
     string private baseURI;
 
-    modifier notContract() {
-        require(!Address.isContract(msg.sender), "No contracts");
-        _;
-    }
-
     constructor() ERC721A("ERC721RExample", "ERC721R") {
         refundAddress = msg.sender;
         toggleRefundCountdown();
@@ -39,7 +34,6 @@ contract ERC721RExample is ERC721A, Ownable {
     function preSaleMint(uint256 quantity, bytes32[] calldata proof)
         external
         payable
-        notContract
     {
         require(presaleActive, "Presale is not active");
         require(msg.value == quantity * mintPrice, "Value");
@@ -59,7 +53,7 @@ contract ERC721RExample is ERC721A, Ownable {
         _safeMint(msg.sender, quantity);
     }
 
-    function publicSaleMint(uint256 quantity) external payable notContract {
+    function publicSaleMint(uint256 quantity) external payable {
         require(publicSaleActive, "Public sale is not active");
         require(msg.value >= quantity * mintPrice, "Not enough eth sent");
         require(
@@ -89,7 +83,7 @@ contract ERC721RExample is ERC721A, Ownable {
     }
 
     function refund(uint256[] calldata tokenIds) external {
-        require(refundGuaranteeActive(), "Refund expired");
+        require(isRefundGuaranteeActive(), "Refund expired");
 
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
@@ -104,7 +98,11 @@ contract ERC721RExample is ERC721A, Ownable {
         Address.sendValue(payable(msg.sender), refundAmount);
     }
 
-    function refundGuaranteeActive() public view returns (bool) {
+    function getRefundGuaranteeEndTime() public view returns (uint256) {
+        return refundEndTime;
+    }
+
+    function isRefundGuaranteeActive() public view returns (bool) {
         return (block.timestamp <= refundEndTime);
     }
 
