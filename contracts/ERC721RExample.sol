@@ -13,12 +13,10 @@ contract ERC721RExample is ERC721A, Ownable {
     // Sale Status
     bool public publicSaleActive;
     bool public presaleActive;
-    uint256 public amountMinted;
     uint256 public refundEndTime;
 
     address public refundAddress;
-    uint256 public maxUserMintAmount = 5;
-    mapping(address => uint256) public userMintedAmount;
+    uint256 public constant maxUserMintAmount = 5;
     bytes32 public merkleRoot;
 
     mapping(uint256 => bool) public hasRefunded; // users can search if the NFT has been refunded
@@ -42,13 +40,10 @@ contract ERC721RExample is ERC721A, Ownable {
             "Not on allow list"
         );
         require(
-            userMintedAmount[msg.sender] + quantity <= maxUserMintAmount,
+            _numberMinted(msg.sender) + quantity <= maxUserMintAmount,
             "Max amount"
         );
-        require(amountMinted + quantity <= maxMintSupply, "Max mint supply");
-
-        amountMinted += quantity;
-        userMintedAmount[msg.sender] += quantity;
+        require(_totalMinted() + quantity <= maxMintSupply, "Max mint supply");
 
         _safeMint(msg.sender, quantity);
     }
@@ -57,22 +52,20 @@ contract ERC721RExample is ERC721A, Ownable {
         require(publicSaleActive, "Public sale is not active");
         require(msg.value >= quantity * mintPrice, "Not enough eth sent");
         require(
-            userMintedAmount[msg.sender] + quantity <= maxUserMintAmount,
+            _numberMinted(msg.sender) + quantity <= maxUserMintAmount,
             "Over mint limit"
         );
         require(
-            amountMinted + quantity <= maxMintSupply,
+            _totalMinted() + quantity <= maxMintSupply,
             "Max mint supply reached"
         );
 
-        amountMinted += quantity;
-        userMintedAmount[msg.sender] += quantity;
         _safeMint(msg.sender, quantity);
     }
 
     function ownerMint(uint256 quantity) external onlyOwner {
         require(
-            amountMinted + quantity <= maxMintSupply,
+            _totalMinted() + quantity <= maxMintSupply,
             "Max mint supply reached"
         );
         _safeMint(msg.sender, quantity);
