@@ -121,7 +121,7 @@ describe("Owner", function () {
   it("Should not be able to mint when `Max mint supply reached`", async function () {
     await erc721RExample.provider.send("hardhat_setStorageAt", [
       erc721RExample.address,
-      "0x9",
+      "0x0",
       ethers.utils.solidityPack(["uint256"], [MAX_MINT_SUPPLY]), // 8000
     ]);
     await expect(erc721RExample.ownerMint(1)).to.be.revertedWith(
@@ -188,7 +188,7 @@ describe("PublicMint", function () {
   it("Should not be able to mint when `Max mint supply reached`", async function () {
     await erc721RExample.provider.send("hardhat_setStorageAt", [
       erc721RExample.address,
-      "0x9",
+      "0x0",
       ethers.utils.solidityPack(["uint256"], [MAX_MINT_SUPPLY]), // 8000
     ]);
     await expect(
@@ -300,7 +300,7 @@ describe("PreSaleMint", function () {
     );
     await erc721RExample.provider.send("hardhat_setStorageAt", [
       erc721RExample.address,
-      "0x9",
+      "0x0",
       ethers.utils.solidityPack(["uint256"], [MAX_MINT_SUPPLY]), // 8000
     ]);
     await expect(

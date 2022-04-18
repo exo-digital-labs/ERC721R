@@ -25,7 +25,10 @@
     "type": "git",
     "url": "git+https://github.com/exo-digital-labs/ERC721R.git"
   },
-  "keywords": [],
+  "keywords": [
+    "solidity",
+    "erc721r"
+  ],
   "author": "exo-digital-labs",
   "license": "MIT",
   "bugs": {
