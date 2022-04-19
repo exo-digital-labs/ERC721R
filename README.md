@@ -1,5 +1,15 @@
 # ERC721R
 
+## How to Install
+
+```
+git clone https://github.com/exo-digital-labs/ERC721R.git
+
+cd ERC721R
+
+npm install && npm run prepare
+```
+
 ## About The Project
 
 The goal of ERC721R is to add refund functionality to the ERC721 and ERC1155 standards. This repo contains community provided examples you can use in your own NFT smart contract.
