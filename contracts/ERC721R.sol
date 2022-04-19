@@ -11,11 +11,6 @@ contract ERC721R is ERC721A {
     mapping(uint256 => bool) public hasRefunded; // users can search if the NFT has been refunded
     mapping(uint256 => bool) public isOwnerMint; // if the NFT was freely minted by owner
 
-    modifier notContract() {
-        require(!Address.isContract(msg.sender), "No contract calls");
-        _;
-    }
-
     constructor(
         string memory name_,
         string memory symbol_,
