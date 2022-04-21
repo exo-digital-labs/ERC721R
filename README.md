@@ -3,10 +3,6 @@
 ## How to Install
 
 ```
-git clone https://github.com/exo-digital-labs/ERC721R.git
-
-cd ERC721R
-
 npm install && npm run prepare
 ```
 
