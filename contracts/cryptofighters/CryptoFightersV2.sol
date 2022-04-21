@@ -132,11 +132,12 @@ contract CryptoFightersV2 is
             hasRefunded[tokenId] = true;
             transferFrom(msg.sender, refundAddress, tokenId);
 
-            if (v2ToV1Mapping[tokenId] != 0) {
-                refundAmount += mintPriceWithPotion;
-            } else {
-                refundAmount += mintPrice;
-            }
+            uint256 tokenAmount = v2ToV1Mapping[tokenId] == 0
+                ? mintPrice
+                : mintPriceWithPotion;
+
+            refundAmount += tokenAmount;
+            emit Refund(msg.sender, tokenId, tokenAmount);
         }
 
         Address.sendValue(payable(msg.sender), refundAmount);
