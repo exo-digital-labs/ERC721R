@@ -186,7 +186,7 @@ contract CryptoFightersAlliance is
      * Requirements:
      *
      * - The caller must be the owner
-     * - The new total supply cannot 
+     * - Total number minted cannot be above max mint supply
      */
     function ownerMint(address to, uint256 quantity) external onlyOwner {
         require(mintedAmount + quantity <= maxMintSupply, "Max supply");
