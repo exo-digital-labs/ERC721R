@@ -38,9 +38,9 @@ contract CryptoFightersAlliance is
     mapping(uint256 => uint256) public v2ToV1Mapping; // mapping connecting v2 fighters to v1 fighters
 
     bool public locked;
+    IERC721 public cryptoFightersV1;
+    CryptoFightersPotion public cryptoFightersPotion;
     string private baseURI;
-    IERC721 private immutable cryptoFightersV1;
-    CryptoFightersPotion private immutable cryptoFightersPotion;
 
     /**
      * @dev triggered after owner withdraws funds
@@ -355,6 +355,13 @@ contract CryptoFightersAlliance is
      */
     function _baseURI() internal view override returns (string memory) {
         return baseURI;
+    }
+
+    /**
+     * @dev Sets crypto fighters potion address
+     */
+    function setCryptoFightersPotionAddress(address _cryptoFightersPotion) external onlyOwner {
+        cryptoFightersPotion = CryptoFightersPotion(_cryptoFightersPotion);
     }
 
     /**
