@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import "./ERC721A.sol";
 import "./IERC721R.sol";
@@ -37,6 +37,7 @@ contract CryptoFightersAlliance is
     mapping(uint256 => bool) public hasV1FighterBeenUpgraded; // mapping storing v1 fighters that have been upgraded
     mapping(uint256 => uint256) public v2ToV1Mapping; // mapping connecting v2 fighters to v1 fighters
 
+    bool public locked;
     string private baseURI;
     IERC721 private immutable cryptoFightersV1;
     CryptoFightersPotion private immutable cryptoFightersPotion;
@@ -383,6 +384,7 @@ contract CryptoFightersAlliance is
      * @dev Sets base uri
      */
     function setBaseURI(string memory uri) external onlyOwner {
+        require(!locked, "Locked");
         baseURI = uri;
         emit SetBaseUri(uri);
     }
@@ -409,6 +411,13 @@ contract CryptoFightersAlliance is
     function togglePublicSaleStatus() external onlyOwner {
         publicSaleActive = !publicSaleActive;
         emit TogglePublicSaleStatus(publicSaleActive);
+    }
+
+    /**
+     * @dev Locks token metadata preventing future updates
+     */
+    function lockMetadata() external onlyOwner {
+        locked = true;
     }
 
     /**
