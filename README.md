@@ -141,6 +141,18 @@ Don't forget to give the project a star! Thanks again!
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
+## Collaborators
+
+-   **[@elie222](https://github.com/elie222)**
+-   **[@davidberiro](https://github.com/davidberiro)**
+-   **[@Amirh24](https://github.com/Amirh24)**
+-   **[@royosherove](https://github.com/royosherove)**
+-   **[@lawweiliang](https://github.com/lawweiliang)**
+-   **[@tina1998612](https://github.com/tina1998612)**
+-   **[@v0xat](https://github.com/v0xat)**
+-   **[@madeinfree](https://github.com/madeinfree)**
+-   **[@s1119858711](https://github.com/s1119858711)**
+
 ## License
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
