@@ -30,47 +30,7 @@ If the creators decide to rug, buyers will request their funds back before the w
 
 ## Usage
 
-Add the following code snippets to your smart contracts to add refunds:
-
-```solidity
-uint256 public constant refundPeriod = 45 days;
-uint256 public refundEndTime;
-address public refundAddress;
-
-constructor() ERC721A("ERC721RExample", "ERC721R") {
-    refundAddress = msg.sender;
-    toggleRefundCountdown();
-}
-
-function isRefundGuaranteeActive() public view returns (bool) {
-    return (block.timestamp <= refundEndTime);
-}
-
-function getRefundGuaranteeEndTime() public view returns (uint256) {
-    return refundEndTime;
-}
-
-function refund(uint256[] calldata tokenIds) external {
-    require(isRefundGuaranteeActive(), "Refund expired");
-
-    for (uint256 i = 0; i < tokenIds.length; i++) {
-        uint256 tokenId = tokenIds[i];
-        require(msg.sender == ownerOf(tokenId), "Not token owner");
-        transferFrom(msg.sender, refundAddress, tokenId);
-    }
-
-    uint256 refundAmount = tokenIds.length * mintPrice;
-    Address.sendValue(payable(msg.sender), refundAmount);
-}
-
-function toggleRefundCountdown() public onlyOwner {
-    refundEndTime = block.timestamp + refundPeriod;
-}
-
-function setRefundAddress(address _refundAddress) external onlyOwner {
-    refundAddress = _refundAddress;
-}
-```
+See the example smart contracts for usage.
 
 ## Benefits
 
