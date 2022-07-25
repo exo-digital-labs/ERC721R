@@ -1,5 +1,7 @@
 # ERC721R
 
+Learn more on [our Notion site](https://erc721r.super.site/).
+
 ## How to Install
 
 ```
