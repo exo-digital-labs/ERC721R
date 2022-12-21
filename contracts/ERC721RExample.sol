@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "erc721a/contracts/ERC721A.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./ERC721A.sol";
+import "./IERC721R.sol";
 
-contract ERC721RExample is ERC721A, Ownable {
+contract ERC721RExample is ERC721A, IERC721R, Ownable {
     uint256 public constant maxMintSupply = 8000;
     uint256 public constant mintPrice = 0.1 ether;
-    uint256 public constant refundPeriod = 45 days;
+    uint256 public constant refundPeriod = 300000;
 
     // Sale Status
     bool public publicSaleActive;
@@ -75,24 +76,35 @@ contract ERC721RExample is ERC721A, Ownable {
         }
     }
 
-    function refund(uint256[] calldata tokenIds) external {
-        require(isRefundGuaranteeActive(), "Refund expired");
+    function refund(uint256 tokenId) external {
+        require(block.number < refundDeadlineOf(tokenId), "Refund expired");
+        require(msg.sender == ownerOf(tokenId), "Not token owner");
 
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            uint256 tokenId = tokenIds[i];
-            require(msg.sender == ownerOf(tokenId), "Not token owner");
-            require(!hasRefunded[tokenId], "Already refunded");
-            require(!isOwnerMint[tokenId], "Freely minted NFTs cannot be refunded");
-            hasRefunded[tokenId] = true;
-            transferFrom(msg.sender, refundAddress, tokenId);
-        }
+        hasRefunded[tokenId] = true;
+        _transfer(msg.sender, refundAddress, tokenId);
 
-        uint256 refundAmount = tokenIds.length * mintPrice;
+        uint256 refundAmount = refundOf(tokenId);
         Address.sendValue(payable(msg.sender), refundAmount);
     }
 
-    function getRefundGuaranteeEndTime() public view returns (uint256) {
+    function refundDeadlineOf(uint256 tokenId) public view returns (uint256) {
+        if (isOwnerMint[tokenId]) {
+            return 0;
+        }
+        if (hasRefunded[tokenId]) {
+            return 0;
+        }
         return refundEndTime;
+    }
+
+    function refundOf(uint256 tokenId) public view returns (uint256) {
+        if (isOwnerMint[tokenId]) {
+            return 0;
+        }
+        if (hasRefunded[tokenId]) {
+            return 0;
+        }
+        return mintPrice;
     }
 
     function isRefundGuaranteeActive() public view returns (bool) {
@@ -122,7 +134,7 @@ contract ERC721RExample is ERC721A, Ownable {
     }
 
     function toggleRefundCountdown() public onlyOwner {
-        refundEndTime = block.timestamp + refundPeriod;
+        refundEndTime = block.number + refundPeriod;
     }
 
     function togglePresaleStatus() external onlyOwner {
