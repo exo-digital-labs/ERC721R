@@ -3,10 +3,11 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Multicall.sol";
 import "./ERC721A.sol";
 import "./IERC721R.sol";
 
-contract ERC721RExample is ERC721A, IERC721R, Ownable {
+contract ERC721RExample is ERC721A, IERC721R, Ownable, Multicall {
     uint256 public constant maxMintSupply = 8000;
     uint256 public constant mintPrice = 0.1 ether;
     uint256 public constant refundPeriod = 300000;
