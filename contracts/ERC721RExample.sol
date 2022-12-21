@@ -15,20 +15,23 @@ contract ERC721RExample is ERC721A, IERC721R, Ownable, Multicall {
     // Sale Status
     bool public publicSaleActive;
     bool public presaleActive;
-    uint256 public refundEndTime;
 
     address public refundAddress;
     uint256 public constant maxUserMintAmount = 5;
     bytes32 public merkleRoot;
 
+    mapping(uint256 => uint256) public refundEndBlockNumbers;
+    uint256 public presaleRefundEndBlockNumber;
+    uint256 public refundEndBlockNumber;
     mapping(uint256 => bool) public hasRefunded; // users can search if the NFT has been refunded
     mapping(uint256 => bool) public isOwnerMint; // if the NFT was freely minted by owner
 
     string private baseURI;
 
     constructor() ERC721A("ERC721RExample", "ERC721R") {
-        refundAddress = msg.sender;
-        toggleRefundCountdown();
+        refundAddress = address(this);
+        refundEndBlockNumber = block.number + refundPeriod;
+        presaleRefundEndBlockNumber = refundEndBlockNumber;
     }
 
     function preSaleMint(uint256 quantity, bytes32[] calldata proof)
@@ -63,6 +66,10 @@ contract ERC721RExample is ERC721A, IERC721R, Ownable, Multicall {
         );
 
         _safeMint(msg.sender, quantity);
+        refundEndBlockNumber = block.number + refundPeriod;
+        for (uint256 i = _currentIndex - quantity; i < _currentIndex; i++) {
+            refundEndBlockNumbers[i] = refundEndBlockNumber;
+        }
     }
 
     function ownerMint(uint256 quantity) external onlyOwner {
@@ -95,7 +102,7 @@ contract ERC721RExample is ERC721A, IERC721R, Ownable, Multicall {
         if (hasRefunded[tokenId]) {
             return 0;
         }
-        return refundEndTime;
+        return refundEndBlockNumbers[tokenId];
     }
 
     function refundOf(uint256 tokenId) public view returns (uint256) {
@@ -108,12 +115,8 @@ contract ERC721RExample is ERC721A, IERC721R, Ownable, Multicall {
         return mintPrice;
     }
 
-    function isRefundGuaranteeActive() public view returns (bool) {
-        return (block.timestamp <= refundEndTime);
-    }
-
     function withdraw() external onlyOwner {
-        require(block.timestamp > refundEndTime, "Refund period not over");
+        require(block.timestamp > refundEndBlockNumber, "Refund period not over");
         uint256 balance = address(this).balance;
         Address.sendValue(payable(owner()), balance);
     }
@@ -122,20 +125,12 @@ contract ERC721RExample is ERC721A, IERC721R, Ownable, Multicall {
         return baseURI;
     }
 
-    function setRefundAddress(address _refundAddress) external onlyOwner {
-        refundAddress = _refundAddress;
-    }
-
     function setMerkleRoot(bytes32 _root) external onlyOwner {
         merkleRoot = _root;
     }
 
     function setBaseURI(string memory uri) external onlyOwner {
         baseURI = uri;
-    }
-
-    function toggleRefundCountdown() public onlyOwner {
-        refundEndTime = block.number + refundPeriod;
     }
 
     function togglePresaleStatus() external onlyOwner {
