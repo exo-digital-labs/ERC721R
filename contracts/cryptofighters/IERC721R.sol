@@ -3,6 +3,11 @@
 
 pragma solidity ^0.8.4;
 
+
+/*
+ * WARNING: This uses the old version of the ERC721R interface. The new version can be found in contracts/IERC721R.sol, or at the following link:
+ * https://eips.ethereum.org/EIPS/eip-5507
+ */
 interface IERC721R {
     event Refund(
         address indexed _sender,
