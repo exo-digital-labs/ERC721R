@@ -9,3 +9,4 @@ package-lock.json
 cache
 artifacts
 .vscode
+.DS_Store

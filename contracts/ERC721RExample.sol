@@ -84,7 +84,7 @@ contract ERC721RExample is ERC721A, IERC721R, Ownable, Multicall {
         }
     }
 
-    function refund(uint256 tokenId) external {
+    function refund(uint256 tokenId) external override {
         require(block.number < refundDeadlineOf(tokenId), "Refund expired");
         require(msg.sender == ownerOf(tokenId), "Not token owner");
 
@@ -95,7 +95,7 @@ contract ERC721RExample is ERC721A, IERC721R, Ownable, Multicall {
         Address.sendValue(payable(msg.sender), refundAmount);
     }
 
-    function refundDeadlineOf(uint256 tokenId) public view returns (uint256) {
+    function refundDeadlineOf(uint256 tokenId) public override view returns (uint256) {
         if (isOwnerMint[tokenId]) {
             return 0;
         }
@@ -105,7 +105,7 @@ contract ERC721RExample is ERC721A, IERC721R, Ownable, Multicall {
         return refundEndBlockNumbers[tokenId];
     }
 
-    function refundOf(uint256 tokenId) public view returns (uint256) {
+    function refundOf(uint256 tokenId) public override view returns (uint256) {
         if (isOwnerMint[tokenId]) {
             return 0;
         }
