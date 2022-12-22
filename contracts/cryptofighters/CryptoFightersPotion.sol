@@ -31,7 +31,7 @@ contract CryptoFightersPotion is ERC1155, Ownable {
     {
         baseURI = _baseURI;
         cryptoFightersV1 = _cryptoFightersV1;
-        emit SetBaseURI(baseURI);
+        emit SetBaseURI(_baseURI);
     }
 
     /**
@@ -109,7 +109,7 @@ contract CryptoFightersPotion is ERC1155, Ownable {
      */
     function updateBaseUri(string memory _baseURI) external onlyOwner {
         baseURI = _baseURI;
-        emit SetBaseURI(baseURI);
+        emit SetBaseURI(_baseURI);
     }
 
     /**
