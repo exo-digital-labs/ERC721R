@@ -29,6 +29,6 @@ interface IERC721R is IERC165, IERC721 {
  
     /// @notice         Gets the first block for which the refund is not active for a given `tokenId`
     /// @param  tokenId The `tokenId` to query
-    /// @return block   The block beyond which the token cannot be refunded
-    function refundDeadlineOf(uint256 tokenId) external view returns (uint256 block);
+    /// @return _block   The block beyond which the token cannot be refunded
+    function refundDeadlineOf(uint256 tokenId) external view returns (uint256 _block);
 }
